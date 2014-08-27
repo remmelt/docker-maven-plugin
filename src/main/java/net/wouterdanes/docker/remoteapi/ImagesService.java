@@ -120,7 +120,7 @@ public class ImagesService extends BaseService {
                     .request(MediaType.APPLICATION_JSON_TYPE)
                     .delete(String.class);
         } catch (WebApplicationException e) {
-            throw makeImageTargetingException("Cannot remove image", e);
+            throw makeImageTargetingException(imageId, e);
         }
     }
 }
