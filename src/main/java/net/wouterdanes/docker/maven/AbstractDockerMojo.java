@@ -26,13 +26,17 @@ import java.util.Map;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
+import com.google.common.collect.Collections2;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 
+import net.wouterdanes.docker.maven.predicates.FilterOnImageId;
+import net.wouterdanes.docker.maven.predicates.FilterOnShouldKeepAfterPushing;
 import net.wouterdanes.docker.provider.DockerProvider;
 import net.wouterdanes.docker.provider.DockerProviderSupplier;
 import net.wouterdanes.docker.provider.model.BuiltImageInfo;
@@ -141,6 +145,12 @@ public abstract class AbstractDockerMojo extends AbstractMojo {
         return Optional.fromNullable(builtImages.get(imageId));
     }
 
+    protected boolean shouldKeepImageAfterPushing(final String imageId) {
+        return !Collections2.filter(getBuiltImages(),
+                Predicates.and(FilterOnImageId.of(imageId), FilterOnShouldKeepAfterPushing.YES))
+                .isEmpty();
+    }
+
     protected void registerPluginError(DockerPluginError error) {
         List<DockerPluginError> errors = obtainListFromPluginContext(ERRORS_KEY);
         errors.add(error);
@@ -176,7 +186,7 @@ public abstract class AbstractDockerMojo extends AbstractMojo {
         attachTag(imageId, newNameAndTag);
 
         // now enqueue for pushing
-        enqueueForPushing(imageId, Optional.fromNullable(newNameAndTag));
+        enqueueForPushing(imageId, Optional.of(newNameAndTag));
     }
 
     protected void enqueueForPushing(final String imageId, final Optional<String> nameAndTag) {

@@ -17,6 +17,9 @@
 
 package net.wouterdanes.docker.provider.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.common.base.Optional;
 
 /**
@@ -29,12 +32,19 @@ public class BuiltImageInfo {
     private final String imageId;
     private final Optional<String> registry;
     private final boolean keepAfterStopping;
+    private final boolean keepAfterPushing;
+    private final List<String> names;
 
     public BuiltImageInfo(final String imageId, ImageBuildConfiguration imageConfig) {
         this.imageId = imageId;
-        this.startId = imageConfig.getId();
-        this.registry = Optional.fromNullable(imageConfig.getRegistry());
-        this.keepAfterStopping = imageConfig.isKeep() || imageConfig.isPush();
+        startId = imageConfig.getId();
+        registry = Optional.fromNullable(imageConfig.getRegistry());
+        names = new ArrayList<>();
+        if (imageConfig.getNameAndTag() != null) {
+            names.add(imageConfig.getNameAndTag());
+        }
+        keepAfterStopping = imageConfig.isKeep() || imageConfig.isPush();
+        keepAfterPushing = imageConfig.isKeep();
     }
 
     public String getStartId() {
@@ -53,4 +63,15 @@ public class BuiltImageInfo {
         return keepAfterStopping;
     }
 
+    public boolean shouldKeepAfterPushing() {
+        return keepAfterPushing;
+    }
+
+    public List<String> getNames() {
+        return names;
+    }
+
+    public void addName(String name) {
+        names.add(name);
+    }
 }

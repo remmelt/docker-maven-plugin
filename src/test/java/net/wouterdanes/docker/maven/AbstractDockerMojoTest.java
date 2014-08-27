@@ -17,6 +17,8 @@
 
 package net.wouterdanes.docker.maven;
 
+import java.util.HashMap;
+
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
@@ -24,6 +26,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import net.wouterdanes.docker.provider.model.ImageBuildConfiguration;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -51,5 +54,39 @@ public class AbstractDockerMojoTest {
         mojo.execute();
 
         Mockito.verify(mojo, atLeastOnce()).doExecute();
+    }
+
+    @Test
+    public void testThatShouldKeepAfterPushingReturnsTrueWhenOneBuiltImageSaysToKeep() throws Exception {
+        AbstractDockerMojo mojo = new NoOpDockerMojo();
+        mojo.setPluginContext(new HashMap());
+
+        ImageBuildConfiguration imageBuildConfiguration = new ImageBuildConfiguration();
+        imageBuildConfiguration.setKeep(true);
+        mojo.registerBuiltImage("someId", imageBuildConfiguration);
+
+        ImageBuildConfiguration imageBuildConfiguration2 = new ImageBuildConfiguration();
+        imageBuildConfiguration2.setKeep(false);
+        mojo.registerBuiltImage("someId", imageBuildConfiguration);
+
+        assert mojo.shouldKeepImageAfterPushing("someId");
+    }
+
+    @Test
+    public void testThatShouldKeepAfterPushingReturnsFalseWhenNoBuiltImageSaysToKeep() throws Exception {
+
+        AbstractDockerMojo mojo = new NoOpDockerMojo();
+        mojo.setPluginContext(new HashMap());
+
+        ImageBuildConfiguration imageBuildConfiguration = new ImageBuildConfiguration();
+        imageBuildConfiguration.setKeep(false);
+        mojo.registerBuiltImage("someId", imageBuildConfiguration);
+
+        ImageBuildConfiguration imageBuildConfiguration2 = new ImageBuildConfiguration();
+        imageBuildConfiguration2.setKeep(false);
+        mojo.registerBuiltImage("someId", imageBuildConfiguration);
+
+        assert !mojo.shouldKeepImageAfterPushing("someId");
+
     }
 }

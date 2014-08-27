@@ -26,6 +26,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 
 import net.wouterdanes.docker.provider.model.PushableImage;
 import net.wouterdanes.docker.remoteapi.exception.DockerException;
+import net.wouterdanes.docker.remoteapi.model.ImageDescriptor;
 
 /**
  * This class is responsible for pushing docking images in the deploy phase of the maven build. The goal
@@ -47,6 +48,12 @@ public class PushImageMojo extends AbstractDockerMojo {
                 String message = String.format("Cannot push image '%s' with tag '%s'",
                         image.getImageId(), image.getNameAndTag().or("<Unspecified>"));
                 handleDockerException(message, e);
+            }
+            ImageDescriptor descriptor = new ImageDescriptor(image.getNameAndTag().get());
+            // If a name has an explicit registry, it's not intended to be kept locally.
+            if (descriptor.getRegistry().isPresent() || !shouldKeepImageAfterPushing(image.getImageId())) {
+                getLog().info(String.format("Removing image '%s' ...", image.getNameAndTag().get()));
+                getDockerProvider().removeImage(image.getNameAndTag().get());
             }
         }
     }

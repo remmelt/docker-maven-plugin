@@ -113,6 +113,11 @@
       <artifactId>guava</artifactId>
       <version>16.0.1</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.3.2</version>
+    </dependency>
     <!-- For Doing REST calls and translating to/from Json -->
     <dependency>
       <groupId>org.glassfish.jersey.core</groupId>
@@ -290,6 +295,7 @@
                 <configuration>
                   <systemProperties>
                     <docker.registry>http://${docker.containers.registry.ports.5000/tcp.host}:${docker.containers.registry.ports.5000/tcp.port}</docker.registry>
+                    <docker.provider>${docker.provider}</docker.provider>
                   </systemProperties>
                 </configuration>
               </execution>

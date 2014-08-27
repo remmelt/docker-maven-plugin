@@ -49,27 +49,36 @@ public class TagImageMojo extends AbstractDockerMojo {
     @Override
     protected void doExecute() throws MojoExecutionException, MojoFailureException {
         for (ImageTagConfiguration config : images) {
-            if (!config.getTags().isEmpty()) {
-                applyTagsToImage(config);
+            if (config.getTags().isEmpty()) {
+                getLog().warn(String.format("Image '%s' doesn't specify any additional tags, ignoring it.", config.getId()));
+                continue;
             }
+            applyTagsToImage(config);
         }
     }
 
     private void applyTagsToImage(ImageTagConfiguration config) throws MojoFailureException {
-        String imageId = config.getId();
+        final String imageId = config.getId();
         boolean push = config.isPush();
         Optional<String> registry = Optional.fromNullable(config.getRegistry());
 
         Optional<BuiltImageInfo> builtInfo = getBuiltImageForStartId(imageId);
+
+        final String idToTag;
         if (builtInfo.isPresent()) {
-            imageId = builtInfo.get().getImageId();
+            idToTag = builtInfo.get().getImageId();
             registry = registry.or(builtInfo.get().getRegistry());
+        } else {
+            idToTag = imageId;
         }
 
         for (String nameAndTag : config.getTags()) {
-            attachTag(imageId, nameAndTag);
+            attachTag(idToTag, nameAndTag);
+            if (builtInfo.isPresent()) {
+                builtInfo.get().addName(nameAndTag);
+            }
             if (push) {
-                enqueueForPushing(imageId, Optional.fromNullable(nameAndTag), registry);
+                enqueueForPushing(idToTag, Optional.fromNullable(nameAndTag), registry);
             }
         }
     }

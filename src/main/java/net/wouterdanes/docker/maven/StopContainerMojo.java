@@ -17,17 +17,21 @@
 
 package net.wouterdanes.docker.maven;
 
+import java.util.Collection;
+
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 
+import net.wouterdanes.docker.maven.predicates.FilterOnShouldKeepAfterStopping;
 import net.wouterdanes.docker.provider.model.BuiltImageInfo;
 import net.wouterdanes.docker.remoteapi.exception.DockerException;
+import static com.google.common.collect.Collections2.filter;
 
 /**
- * This class is responsible for stopping the docker containers that were started by the plugin. The goal
- * is called "stop-containers" and it's executed in the "post-integration-test" phase.
+ * This class is responsible for stopping the docker containers that were started by the plugin. The goal is called
+ * "stop-containers" and it's executed in the "post-integration-test" phase.
  */
 @Mojo(name = "stop-containers", threadSafe = true, defaultPhase = LifecyclePhase.POST_INTEGRATION_TEST)
 public class StopContainerMojo extends AbstractPreVerifyDockerMojo {
@@ -52,12 +56,12 @@ public class StopContainerMojo extends AbstractPreVerifyDockerMojo {
                 getLog().error("Failed to delete container", e);
             }
         }
-        for (BuiltImageInfo image : getBuiltImages()) {
-            if (image.shouldKeepAfterStopping()) {
-                getLog().info(String.format("Keeping image %s", image.getImageId()));
-                continue;
-            }
+        cleanUpImages();
+    }
 
+    private void cleanUpImages() {
+        Collection<BuiltImageInfo> imagesToDelete = filter(getBuiltImages(), FilterOnShouldKeepAfterStopping.NO);
+        for (BuiltImageInfo image : imagesToDelete) {
             getLog().info(String.format("Removing image '%s' (%s) ...", image.getImageId(), image.getStartId()));
 
             try {
