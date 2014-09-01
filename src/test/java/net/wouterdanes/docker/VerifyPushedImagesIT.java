@@ -6,12 +6,14 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.jackson.JacksonFeature;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * This Integration Test checks the registry to see if all images are pushed by the IT POMs.
@@ -55,13 +57,18 @@ public class VerifyPushedImagesIT {
 
     private void assertThatImageExists(String name, String tag, String itName) {
 
-        Map<String,String> tags = repositories.path(name).path("tags")
+        Response response = repositories.path(name).path("tags")
                 .request(MediaType.APPLICATION_JSON_TYPE)
-                .get(new GenericType<Map<String, String>>() {
-                });
+                .get();
 
-        Assert.assertTrue(String.format("Integration test '%s' should push image '%s:%s'.", itName, name, tag),
-                tags.containsKey(tag));
+        String imageMessage = String.format("Image '%s' must exist", name);
+        assertTrue(imageMessage, response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL);
+
+        Map<String, String> tags = response.readEntity(new GenericType<Map<String, String>>() {
+        });
+
+        String message = String.format("Integration test '%s' should push image '%s:%s'.", itName, name, tag);
+        assertTrue(message, tags.containsKey(tag));
 
     }
 }
