@@ -40,6 +40,16 @@
     <developerConnection>scm:git:git@github.com:remmelt/docker-maven-plugin.git</developerConnection>
   </scm>
 
+    <distributionManagement>
+        <repository>
+            <id>info.nl-nexus</id>
+            <url>https://nexus.info.nl/nexus/content/repositories/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>info.nl-nexus</id>
+            <url>https://nexus.info.nl/nexus/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
   <issueManagement>
     <system>Github</system>
     <url>https://github.com/remmelt/docker-maven-plugin/issues</url>
