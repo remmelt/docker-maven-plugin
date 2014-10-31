@@ -11,7 +11,7 @@
     <maven>${maven.required.version}</maven>
   </prerequisites>
 
-  <groupId>net.wouterdanes.docker</groupId>
+  <groupId>com.remmelt</groupId>
   <artifactId>docker-maven-plugin</artifactId>
   <version>2.4-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
@@ -35,20 +35,15 @@
   </licenses>
 
   <scm>
-    <url>https://github.com/wouterd/docker-maven-plugin</url>
-    <connection>scm:git:git@github.com:wouterd/docker-maven-plugin.git</connection>
-    <developerConnection>scm:git:git@github.com:wouterd/docker-maven-plugin.git</developerConnection>
+    <url>https://github.com/remmelt/docker-maven-plugin</url>
+    <connection>scm:git:git@github.com:remmelt/docker-maven-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:remmelt/docker-maven-plugin.git</developerConnection>
   </scm>
 
   <issueManagement>
     <system>Github</system>
-    <url>https://github.com/wouterd/docker-maven-plugin/issues</url>
+    <url>https://github.com/remmelt/docker-maven-plugin/issues</url>
   </issueManagement>
-
-  <ciManagement>
-    <system>Travis-ci</system>
-    <url>https://travis-ci.org/wouterd/docker-maven-plugin</url>
-  </ciManagement>
 
   <developers>
     <developer>
