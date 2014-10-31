@@ -89,6 +89,7 @@ public class ImageBuildConfiguration {
         this.registry = registry;
     }
 
+
 	public List<Artifact> getArtifacts() {
 		return artifacts;
 	}

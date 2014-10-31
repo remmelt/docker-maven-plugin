@@ -47,6 +47,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -190,8 +191,9 @@ public abstract class RemoteApiBasedDockerProvider implements DockerProvider {
     private static byte[] getTgzArchiveForFiles(final ImageBuildConfiguration image) {
 	    ByteArrayOutputStream baos = new ByteArrayOutputStream();
 	    try (
-			    CompressorOutputStream gzipStream = new CompressorStreamFactory().createCompressorOutputStream("gz", baos);
-			    ArchiveOutputStream tar = new ArchiveStreamFactory().createArchiveOutputStream("tar", gzipStream)
+//			    CompressorOutputStream gzipStream = new CompressorStreamFactory().createCompressorOutputStream("gz", baos);
+//			    OutputStream ou
+			    ArchiveOutputStream tar = new ArchiveStreamFactory().createArchiveOutputStream("tar", baos)
 	    ) {
 		    addToTar(tar, image.getDockerFile(), "Dockerfile");
 
@@ -202,8 +204,8 @@ public abstract class RemoteApiBasedDockerProvider implements DockerProvider {
 		    }
 
 		    tar.flush();
-		    gzipStream.flush();
-	    } catch (CompressorException | ArchiveException | IOException e) {
+		    baos.flush();
+	    } catch (ArchiveException | IOException e) {
 		    throw new IllegalStateException("Unable to create output archive", e);
 	    }
 	    return baos.toByteArray();
@@ -213,11 +215,21 @@ public abstract class RemoteApiBasedDockerProvider implements DockerProvider {
 		if(!file.exists() || !file.canRead()) {
 			throw new FileNotFoundException(String.format("Cannot read file %s. Are you sure it exists?", file.getAbsolutePath()));
 		}
-		ArchiveEntry entry = tar.createArchiveEntry(file, fileNameAndPath);
-		tar.putArchiveEntry(entry);
-		byte[] contents = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
-		tar.write(contents);
-		tar.closeArchiveEntry();
+		if(file.isDirectory()){
+			for (File fileInDirectory : file.listFiles()){
+				if (!fileNameAndPath.endsWith("/")){
+					fileNameAndPath = fileNameAndPath + "/";
+				}
+				addToTar(tar, fileInDirectory, fileNameAndPath + fileInDirectory.getName());
+			}
+		}else{
+			ArchiveEntry entry = tar.createArchiveEntry(file, fileNameAndPath);
+			tar.putArchiveEntry(entry);
+			byte[] contents = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
+			tar.write(contents);
+			tar.closeArchiveEntry();
+		}
+
 	}
 
 	private static Integer getDockerPortFromEnvironment() {
